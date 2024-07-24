@@ -1,0 +1,132 @@
+<!DOCTYPE HTML>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org">
+<meta http-equiv="content-language" content="ru">
+<head>
+    <title>Админ Панель</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="/css/all-page-style.css" rel="stylesheet">
+</head>
+<style>
+    @media screen and (min-width: 900px) {
+        .carousel-width, .carousel-width img {
+            width: 50%;
+        }
+        .carousel-width{
+            margin:auto;
+        }
+    }
+    @media screen and (max-width: 901px) {
+        .carousel-width, .carousel-width img {
+            width: 100%;
+        }
+    }
+</style>
+<body>
+<div th:replace="~{blocks/headerForPages :: headerForPages}"></div>
+
+<main class="mt-5 container" style="max-width: 1800px">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="list-group">
+                <a href="#profile" class="list-group-item list-group-item-action active" data-bs-toggle="list">Типы бронирования</a>
+                <a href="#rooms" class="list-group-item list-group-item-action" data-bs-toggle="list">Номера</a>
+                <a href="#bookings" class="list-group-item list-group-item-action" data-bs-toggle="list">Новые брони</a>
+                <a href="/perform_logout" class="list-group item list-group-item-action text-center pb-2 pt-2" style="background-color: #d8e7d9">Выйти из учетной записи</a>
+            </div>
+        </div>
+        <div class="col-md-9">
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="profile">
+                    <h3 class="text-center">Типы бронирования</h3>
+                    <div th:each="entry, iterStat : ${bookingTypePhotoMap}">
+                        <div class="mb-4">
+                            <h4 th:text="${entry.key.type}">Тип бронирования</h4>
+                            <div th:id="'carouselExampleIndicatorsBooking'+${iterStat.index}" class="carousel slide carousel-width" data-bs-ride="carousel">
+                                <div class="carousel-inner">
+                                    <div th:each="photo, stat : ${entry.value}" th:classappend="${stat.first ? ' active' : ''}" class="carousel-item" style="transition: transform 1s ease;">
+                                        <img th:src="${photo.photos.url}" class="d-block w-100" alt="...">
+                                    </div>
+                                </div>
+                                <button class="carousel-control-prev" type="button" th:data-bs-target="'#carouselExampleIndicatorsBooking'+${iterStat.index}" data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Previous</span>
+                                </button>
+                                <button class="carousel-control-next" type="button" th:data-bs-target="'#carouselExampleIndicatorsBooking'+${iterStat.index}" data-bs-slide="next">
+                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Next</span>
+                                </button>
+                            </div>
+                            <a th:href="@{/admin-panel/booking-types/{id}/add-photo(id=${entry.key.id})}" class="btn btn-primary mt-2">Изменить фотографии</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="rooms">
+                    <h3 class="text-center">Номера</h3>
+                    <div th:each="entry, iterStat : ${roomPhotoMap}">
+                        <div class="mb-4">
+                            <h4 th:text="${entry.key.title}">Тип комнаты</h4>
+                            <div th:id="'carouselExampleIndicators'+${iterStat.index}" class="carousel slide carousel-width" data-bs-ride="carousel">
+                                <div class="carousel-inner">
+                                    <div th:each="photo, stat : ${entry.value}" th:classappend="${stat.first ? ' active' : ''}" class="carousel-item" style="transition: transform 1s ease;">
+                                        <img th:src="${photo.photos.url}" class="d-block w-100" alt="...">
+                                    </div>
+                                </div>
+                                <button class="carousel-control-prev" type="button" th:data-bs-target="'#carouselExampleIndicators'+${iterStat.index}" data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Previous</span>
+                                </button>
+                                <button class="carousel-control-next" type="button" th:data-bs-target="'#carouselExampleIndicators'+${iterStat.index}" data-bs-slide="next">
+                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Next</span>
+                                </button>
+                            </div>
+                            <a th:href="@{/admin-panel/rooms/{id}/add-photo(id=${entry.key.id})}" class="btn btn-primary mt-2">Изменить фотографии</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="bookings">
+                    <div class="row row-cols-1 row-cols-md-2 g-4">
+                        <!-- Используем Thymeleaf для динамической генерации карточек -->
+                        <div th:each="booking : ${bookingList}" class="col">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Номер бронирования: <span th:text="${booking.id}"></span></h5>
+                                    <p class="card-text">Дата бронирования: <span th:text="${booking.bookingDate}"></span></p>
+                                    <p class="card-text">Тип номера для бронирования: <span th:text="${booking.rooms.roomType.title}"></span></p>
+                                    <p class="card-text">Номер комнаты: <span th:text="${booking.rooms.roomNumber}"></span></p>
+                                    <p class="card-text">Дата заезда: <span th:text="${booking.checkInDate}"></span></p>
+                                    <p class="card-text">Дата отъезда: <span th:text="${booking.departureDate}"></span></p>
+                                    <p class="card-text">Сумма: <span th:text="${booking.amount}"></span></p>
+                                    <p class="card-text">Статус: <span th:text="${booking.status.title}"></span></p>
+                                    <p class="card-text">ФИО клиента: <span th:text="${booking.users.surname}+' '+${booking.users.name}+' '+${booking.users.patronymic}"></span></p>
+                                    <p class="card-text">Телефон: <span th:text="${booking.users.phoneNumber}"></span></p>
+                                    <form th:action="@{/confirmBooking/{bookingId}(bookingId=${booking.id})}" class="mb-2" method="post">
+                                        <button type="submit" class="btn btn-primary">Подтвердить бронь</button>
+                                    </form>
+                                    <form th:action="@{/cancelBooking/{bookingId}(bookingId=${booking.id})}" method="post">
+                                        <button type="submit" class="btn btn-danger">Отменить бронь</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<div th:replace="~{blocks/footer :: footer}"></div>
+
+<script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+</body>
+</html>

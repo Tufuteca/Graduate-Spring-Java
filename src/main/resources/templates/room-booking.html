@@ -1,0 +1,120 @@
+<!DOCTYPE HTML>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org">
+<meta http-equiv="content-language" content="ru">
+<head>
+    <title>Бронирование номера</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="/css/all-page-style.css" rel="stylesheet">
+    <link href="/css/lightbox.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <!-- Подключение файла локализации для русского языка -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery-ui/ui/i18n/datepicker-ru.js"></script>
+</head>
+<body>
+<div th:replace="~{blocks/headerForPages :: headerForPages}"></div>
+<main class="container mt-5" style="max-width: 850px;">
+    <h3 class="mb-4" th:text="${roomType.title}">Название номера</h3>
+    <form th:action="@{/handle-booking}" method="post">
+        <input type="hidden" name="roomTypeId" th:value="${roomType.id}">
+        <div class="mb-3">
+            <label for="roomType" class="form-label">Тип номера</label>
+            <input type="text" id="roomType" class="form-control" th:value="${roomType.title}" readonly>
+        </div>
+        <div class="mb-3">
+            <label for="bookingType" class="form-label">Тип бронирования</label>
+            <select id="bookingType" name="bookingTypeId" class="form-select" required>
+                <option th:each="type : ${bookingTypes}" th:value="${type.id}" th:text="${type.type}" th:attr="data-discount=${type.discount}">Тип бронирования</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="checkInDate" class="form-label">Дата заселения</label>
+            <input type="text" id="checkInDate" name="checkInDate" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label for="departureDate" class="form-label">Дата выезда</label>
+            <input type="text" id="departureDate" name="departureDate" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label for="description" class="form-label">Описание</label>
+            <textarea id="description" name="description" class="form-control"></textarea>
+        </div>
+        <div class="mb-3">
+            <p id="daysDifference" style="display: none;"></p>
+        </div>
+        <button type="submit" class="btn btn-primary">Забронировать</button>
+    </form>
+</main>
+<div th:replace="~{blocks/footer :: footer}"></div>
+
+<!-- Подключение jQuery -->
+<script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+<!-- Подключение jQuery UI -->
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script th:inline="javascript">
+    $(function() {
+        var disabledDates = /*[[${disabledDates}]]*/ [];
+
+        function isDateDisabled(date) {
+            for (var i = 0; i < disabledDates.length; i++) {
+                var range = disabledDates[i];
+                if (date >= $.datepicker.parseDate('yy-mm-dd', range.start) && date <= $.datepicker.parseDate('yy-mm-dd', range.end)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        $("#checkInDate, #departureDate").datepicker({
+            dateFormat: "yy-mm-dd",
+            minDate: 0,
+            beforeShowDay: function(date) {
+                var string = jQuery.datepicker.formatDate('yy-mm-dd', date);
+                return [!isDateDisabled(date), ''];
+            }
+        });
+
+        $("#checkInDate").on("change", function() {
+            var checkInDate = $("#checkInDate").datepicker("getDate");
+            var minDepartureDate = new Date(checkInDate.getFullYear(), checkInDate.getMonth(), checkInDate.getDate() + 1);
+            $("#departureDate").datepicker("option", "minDate", minDepartureDate);
+            calculateDaysDifference();
+        });
+
+        $("#departureDate").on("change", function() {
+            calculateDaysDifference();
+        });
+        var discount = 0;
+        $(document).ready(function() {
+            // Когда пользователь выбирает новый тип бронирования
+            $('#bookingType').on('change', function() {
+                // Получаем выбранный элемент
+                var selectedOption = $('#bookingType option:selected');
+
+                // Извлекаем значение атрибута data-discount
+                discount = selectedOption.data('discount');
+
+                // Выводим значение скидки в консоль (или используем по необходимости)
+                console.log('Discount:', discount);
+                calculateDaysDifference();
+            });
+        });
+        function calculateDaysDifference() {
+            var checkInDate = $("#checkInDate").datepicker("getDate");
+            var departureDate = $("#departureDate").datepicker("getDate");
+
+            if (checkInDate && departureDate) {
+                var timeDiff = departureDate - checkInDate;
+                var daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24)); // количество дней
+                var bookingPrice = [[${roomType.price}]] * daysDiff - ([[${roomType.price}]] * daysDiff/100 * discount)
+                console.log(bookingPrice); // Для проверки значения в консоли
+                $("#daysDifference").text("Общая сумма бронирования составляет: "+bookingPrice+"₽").show();
+            }
+        }
+    });
+</script>
+<script src="/js/TranslateDatePicker.js"></script>
+</body>
+</html>

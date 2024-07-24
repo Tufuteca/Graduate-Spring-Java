@@ -1,0 +1,96 @@
+<!DOCTYPE HTML>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org">
+<meta http-equiv="content-language" content="ru">
+<head>
+    <title>Детали номера</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="/css/all-page-style.css" rel="stylesheet">
+    <link href="/css/lightbox.css" rel="stylesheet">
+</head>
+<style>
+    .carousel-item img {
+        width: 100%;
+        height: auto;
+        object-fit: cover;
+    }
+    .carousel {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+    }
+    .carousel-inner {
+        max-width: 100%;
+    }
+</style>
+<body>
+<div th:replace="~{blocks/headerForPages :: headerForPages}"></div>
+<main class="container mt-5">
+    <h3 class="mb-4" th:text="${roomType.title}">Название номера</h3>
+    <div id="roomCarousel" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner">
+            <div th:each="photo, stat : ${photos}" th:classappend="${stat.first ? ' active' : ''}" class="carousel-item">
+                <a th:href="${photo.photos.url}" data-lightbox="roadtrip"><img th:src="${photo.photos.url}" class="d-block" style="max-height: 500px" alt="Фото номера"></a>
+            </div>
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#roomCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#roomCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
+    </div>
+    <div class="mt-4">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="row">
+                    <div class="col-12 col-md-6 col-sm-1 mb-3">
+                        <img src="/svg/money-svgrepo-com.svg" style="vertical-align: middle; max-width: 70px;float:left">
+                        <p class="mt-4" th:text="${roomType.price} + ' руб.'">Цена</p>
+                    </div>
+                    <div class="col-12 col-md-6 col-sm-1 mb-3 mt-2">
+                        <img src="/svg/resize-size-svgrepo-com.svg" style="vertical-align: middle; max-width: 50px;float:left;margin-right: 5px;">
+                        <p class="mt-3" th:text="${roomType.area} + ' м²'">Площадь</p>
+                    </div>
+                    <div class="col-12">
+                        <p th:text="${roomType.description}">Описание</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-2 mt-4 mt-md-0">
+                <div class="pb-3" style="background-color:#f0f4f7; border-radius:16px;display: flex;justify-content: center;">
+                    <a th:href="@{/room-booking(roomType=${roomType.id})}" class="btn btn-primary mt-3">Забронировать</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="about-us-info mt-3" style="background-color:#f0f4f7; border-radius:16px;">
+        <h5 style="padding:10px">Включенные услуги:</h5>
+        <ul style="padding-bottom: 10px;">
+            <li th:each="serviceRoom : ${services}" th:text="${serviceRoom.service.title}">Услуга</li>
+        </ul>
+    </div>
+</main>
+<div th:replace="~{blocks/footer :: footer}"></div>
+
+<!-- Подключение jQuery -->
+<script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+<!-- Подключение Popper.js -->
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p" crossorigin="anonymous"></script>
+<!-- Подключение Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF" crossorigin="anonymous"></script>
+<script src="/js/lightbox.js"></script>
+
+<script>
+    lightbox.option({
+        'resizeDuration': 200,
+        'wrapAround': true
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE HTML>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org">
+<meta http-equiv="content-language" content="ru">
+<head>
+    <title>Номера</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+          crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="/css/all-page-style.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+</head>
+<style>
+    .faq-answer {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease; /* Добавлено анимированное свойство */
+    }
+</style>
+<body>
+<div th:replace="~{blocks/headerForPages :: headerForPages}"></div>
+<main class="mt-5 ms-5 me-5">
+    <div class="row">
+        <!-- Форма фильтрации -->
+        <aside class="col-md-2" style="cursor: pointer">
+            <h3 class="mb-4 ps-3 faq-question" style="background-color:#f0f4f7; border-radius:16px;padding-left: 5px;">Фильтрация <i class="fas fa-chevron-down me-3 mt-1" style="float:right"></i></h3>
+            <form method="get" action="/rooms" class="faq-answer">
+                <div class="row">
+                    <h5 class="text-center mb-3">Название номера:</h5>
+                <div class="mb-3">
+                    <input type="text" class="form-control" name="title" placeholder="Название" th:value="${title}">
+                </div>
+                    <h5 class="text-center mb-3">Цена:</h5>
+                <div class="mb-3 col-6">
+                    <input type="number" class="form-control" name="minPrice" placeholder="Цена от" th:value="${minPrice}">
+                </div>
+                <div class="mb-3 col-6">
+                    <input type="number" class="form-control" name="maxPrice" placeholder="Цена до" th:value="${maxPrice}">
+                </div>
+                    <h5 class="text-center mb-3">Площадь:</h5>
+                <div class="mb-3 col-6">
+                    <input type="number" class="form-control" name="minArea" placeholder="Площадь от" th:value="${minArea}">
+                </div>
+                <div class="mb-3 col-6">
+                    <input type="number" class="form-control" name="maxArea" placeholder="Площадь до" th:value="${maxArea}">
+                </div>
+                    <h5 class="text-center mb-3">Количество мест:</h5>
+                <div class="mb-3 col-6">
+                    <input type="number" class="form-control" name="minPlaces" placeholder="Мест от" th:value="${minPlaces}">
+                </div>
+                <div class="mb-3 col-6">
+                    <input type="number" class="form-control" name="maxPlaces" placeholder="Мест до" th:value="${maxPlaces}">
+                </div>
+                    <h5 class="text-center mb-3">Статус:</h5>
+                <div class="mb-3">
+                    <select class="form-control" name="status">
+                        <option value="" th:selected="${status == ''}">Любой статус</option>
+                        <option value="Свободен" th:selected="${status == 'Свободен'}">Свободные номера</option>
+                        <option value="Забронирован" th:selected="${status == 'Забронирован'}">Занятые номера</option>
+                    </select>
+                </div>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 mb-5">Применить</button>
+            </form>
+        </aside>
+
+        <!-- Основное содержимое -->
+        <section class="col-md-9">
+            <h3 class="text-center mb-5">Номера</h3>
+            <div class="col mb-4" th:each="entry, iterStat : ${roomPhotoMap}">
+                <div class="card h-100">
+                    <div class="row g-0">
+                        <div class="col-md-4">
+                            <div th:id="'carouselExampleIndicators'+${iterStat.index}" class="carousel slide" data-bs-ride="carousel">
+                                <div class="carousel-inner">
+                                    <div th:each="photo, stat : ${entry.value}" th:classappend="${stat.first ? ' active' : ''}" class="carousel-item" style="transition: transform 1s ease;">
+                                        <img th:src="${photo.photos.url}" class="d-block w-100" alt="...">
+                                    </div>
+                                </div>
+                                <button class="carousel-control-prev" type="button" th:data-bs-target="'#carouselExampleIndicators'+${iterStat.index}" data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Previous</span>
+                                </button>
+                                <button class="carousel-control-next" type="button" th:data-bs-target="'#carouselExampleIndicators'+${iterStat.index}" data-bs-slide="next">
+                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Next</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="card-body">
+                                <h4 class="card-title" th:text="${entry.key.title}">Тип комнаты</h4>
+                                <p class="card-text" th:text="'Мест в номере: ' + ${entry.key.places}"></p>
+                                <p class="card-text" th:text="'Цена: ' + ${entry.key.price} + ' руб.'"></p>
+                                <p class="card-text" th:text="'Площадь: '+ ${entry.key.area} + ' м²'"></p>
+                                <p class="card-text" th:text="${entry.key.description}"></p>
+                                <a th:href="@{/room/{id}(id=${entry.key.id})}" class="btn btn-primary mt-2 mb-3" style="float:right">Подробнее</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+    </div>
+</main>
+
+<div th:replace="~{blocks/footer :: footer}"></div>
+
+<!-- Подключение jQuery -->
+<script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+
+<!-- Подключение Popper.js -->
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p" crossorigin="anonymous"></script>
+
+<!-- Подключение Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF" crossorigin="anonymous"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var faqQuestions = document.querySelectorAll(".faq-question");
+
+        faqQuestions.forEach(function (question) {
+            question.addEventListener("click", function () {
+                var answer = this.nextElementSibling;
+                if (answer.classList.contains("faq-answer")) { // Проверка наличия класса faq-answer
+                    if (answer.style.maxHeight) {
+                        answer.style.maxHeight = null;
+                    } else {
+                        answer.style.maxHeight = answer.scrollHeight + "px";
+                    }
+                }
+            });
+        });
+    });
+</script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script>
+    $(function() {
+        $("#input-left").slider({
+            range: "min",
+            value: 3500,
+            min: 3500,
+            max: 17999990,
+            slide: function(event, ui) {
+                $("#input-left").val(ui.value);
+            }
+        });
+        $("#input-right").slider({
+            range: "min",
+            value: 17999990,
+            min: 3500,
+            max: 17999990,
+            slide: function(event, ui) {
+                $("#input-right").val(ui.value);
+            }
+        });
+    });
+</script>
+
+</body>
+</html>
